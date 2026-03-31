@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+psycopg2-binary
+supabase
+python-multipart
+python-magic
+python-dotenv
+apscheduler
+pytest
+httpx
