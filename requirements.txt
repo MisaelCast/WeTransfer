@@ -8,3 +8,4 @@ python-dotenv
 apscheduler
 pytest
 httpx
+pydantic-settings
