@@ -28,3 +28,4 @@ uploads/
 # Mypy
 .mypy_cache/
 
+repomix-output.xml
