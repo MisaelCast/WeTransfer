@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.api.routes.file_routes import router
+from app.services.expiration_service import start_scheduler
 
 app = FastAPI(
     title="WeTransfer Clon",
@@ -10,6 +11,11 @@ app = FastAPI(
 app.include_router(router)
 
 
+@app.on_event("startup")
+def startup_event():
+    start_scheduler()
+
+
 @app.get("/")
 def root():
-    return {"message": "WeTransfer Clon API corriendo"}
+    return {"message": "WeTransfer API corriendo"}
