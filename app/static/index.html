@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WeTransfer Clon</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #1a1a2e;
+        color: #eee;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container {
+        background: #16213e;
+        border-radius: 16px;
+        padding: 40px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+        color: #e94560;
+      }
+
+      p.subtitle {
+        color: #aaa;
+        margin-bottom: 32px;
+        font-size: 0.95rem;
+      }
+
+      .drop-zone {
+        border: 2px dashed #e94560;
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-bottom: 20px;
+      }
+
+      .drop-zone:hover {
+        background: rgba(233, 69, 96, 0.05);
+      }
+
+      .drop-zone input {
+        display: none;
+      }
+
+      .drop-zone p {
+        color: #aaa;
+        font-size: 0.9rem;
+        margin-top: 8px;
+      }
+
+      .drop-zone .icon {
+        font-size: 2.5rem;
+      }
+
+      #file-name {
+        color: #e94560;
+        font-size: 0.9rem;
+        margin-bottom: 16px;
+        min-height: 20px;
+      }
+
+      button {
+        width: 100%;
+        padding: 14px;
+        background: #e94560;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #c73652;
+      }
+      button:disabled {
+        background: #555;
+        cursor: not-allowed;
+      }
+
+      .result {
+        margin-top: 24px;
+        background: #0f3460;
+        border-radius: 8px;
+        padding: 20px;
+        display: none;
+      }
+
+      .result p {
+        font-size: 0.85rem;
+        color: #aaa;
+        margin-bottom: 8px;
+      }
+
+      .result a {
+        color: #e94560;
+        word-break: break-all;
+        font-size: 0.9rem;
+      }
+
+      .result .info {
+        margin-top: 12px;
+        font-size: 0.8rem;
+        color: #888;
+      }
+
+      .copy-btn {
+        margin-top: 12px;
+        padding: 8px;
+        font-size: 0.85rem;
+        background: #0f3460;
+        border: 1px solid #e94560;
+        width: 100%;
+      }
+
+      .copy-btn:hover {
+        background: #1a4a7a;
+      }
+
+      .error {
+        margin-top: 16px;
+        color: #e94560;
+        font-size: 0.9rem;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>WeTransfer Clon</h1>
+      <p class="subtitle">
+        Sube un archivo y comparte el enlace. Expira en 72 horas.
+      </p>
+
+      <div
+        class="drop-zone"
+        onclick="document.getElementById('file-input').click()"
+      >
+        <div class="icon">📁</div>
+        <p>Haz clic para seleccionar un archivo</p>
+        <input type="file" id="file-input" onchange="handleFileSelect(this)" />
+      </div>
+
+      <div id="file-name"></div>
+
+      <button id="upload-btn" onclick="uploadFile()" disabled>
+        Subir archivo
+      </button>
+
+      <div class="result" id="result">
+        <p>Enlace de descarga:</p>
+        <a id="download-link" href="#" target="_blank"></a>
+        <button class="copy-btn" onclick="copyLink()">Copiar enlace</button>
+        <div class="info" id="expiry-info"></div>
+      </div>
+
+      <div class="error" id="error-msg"></div>
+    </div>
+
+    <script>
+      let selectedFile = null;
+
+      function handleFileSelect(input) {
+        selectedFile = input.files[0];
+        if (selectedFile) {
+          document.getElementById("file-name").textContent =
+            `Archivo: ${selectedFile.name}`;
+          document.getElementById("upload-btn").disabled = false;
+        }
+      }
+
+      async function uploadFile() {
+        if (!selectedFile) return;
+
+        const btn = document.getElementById("upload-btn");
+        btn.disabled = true;
+        btn.textContent = "Subiendo...";
+
+        document.getElementById("error-msg").style.display = "none";
+        document.getElementById("result").style.display = "none";
+
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        try {
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || "Error al subir el archivo");
+          }
+
+          const data = await response.json();
+          const downloadUrl = `${window.location.origin}/download/${data.download_token}`;
+
+          document.getElementById("download-link").href = downloadUrl;
+          document.getElementById("download-link").textContent = downloadUrl;
+          document.getElementById("expiry-info").textContent =
+            `Expira: ${new Date(data.expires_at).toLocaleString()}`;
+          document.getElementById("result").style.display = "block";
+        } catch (err) {
+          document.getElementById("error-msg").textContent = err.message;
+          document.getElementById("error-msg").style.display = "block";
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Subir archivo";
+        }
+      }
+
+      function copyLink() {
+        const link = document.getElementById("download-link").textContent;
+        navigator.clipboard.writeText(link).then(() => {
+          alert("Enlace copiado");
+        });
+      }
+    </script>
+  </body>
+</html>

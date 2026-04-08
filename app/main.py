@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app.api.routes.file_routes import router
 from app.services.expiration_service import start_scheduler
 
@@ -8,6 +10,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(router)
 
 
@@ -18,4 +21,4 @@ def startup_event():
 
 @app.get("/")
 def root():
-    return {"message": "WeTransfer API corriendo"}
+    return FileResponse("app/static/index.html")
