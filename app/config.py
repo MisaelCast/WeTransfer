@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     supabase_bucket: str = "files"
 
     # Configuración de archivos
-    max_file_size_mb: int = 100
-    expiration_hours: int = 72
+    max_file_size_mb: int = 50
+    expiration_hours: int = 12
 
     class Config:
         env_file = ".env"

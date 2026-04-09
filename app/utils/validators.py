@@ -1,4 +1,5 @@
 import magic
+import os
 from fastapi import HTTPException, UploadFile
 from app.config import settings
 
@@ -22,7 +23,23 @@ BLOCKED_EXTENSIONS = [
 
 
 def validate_file(file: UploadFile, file_bytes: bytes) -> None:
-    """Valida tamaño, extensión y MIME type real del archivo."""
+    """Valida tamaño, extensión, path traversal y MIME type real del archivo."""
+
+    # Validar path traversal
+    filename = file.filename or ""
+    if ".." in filename or "/" in filename or "\\" in filename:
+        raise HTTPException(
+            status_code=400,
+            detail="Nombre de archivo no válido"
+        )
+
+    # Sanitizar nombre de archivo
+    filename = os.path.basename(filename)
+    if not filename:
+        raise HTTPException(
+            status_code=400,
+            detail="Nombre de archivo no válido"
+        )
 
     # Validar tamaño
     max_bytes = settings.max_file_size_mb * 1024 * 1024
@@ -33,7 +50,6 @@ def validate_file(file: UploadFile, file_bytes: bytes) -> None:
         )
 
     # Validar extensión
-    filename = file.filename or ""
     ext = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     if ext in BLOCKED_EXTENSIONS:
         raise HTTPException(
@@ -41,7 +57,7 @@ def validate_file(file: UploadFile, file_bytes: bytes) -> None:
             detail=f"Tipo de archivo no permitido: {ext}"
         )
 
-    # Validar MIME type real (no solo la extensión)
+    # Validar MIME type real
     real_mime = magic.from_buffer(file_bytes, mime=True)
     if real_mime not in ALLOWED_MIME_TYPES:
         raise HTTPException(

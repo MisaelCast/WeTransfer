@@ -1,10 +1,12 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request
 from datetime import datetime, timedelta
 from app.config import settings
 from app.utils.validators import validate_file
+from app.utils.limiter import limiter
+from app.utils.auth import get_current_user
 from app.services.token_service import generate_token
 from app.services.storage_service import upload_file, delete_file, get_file
-from app.db.queries import insert_file, get_file_by_token, delete_file_by_id
+from app.db.queries import insert_file, get_file_by_token, delete_file_by_id, get_user_uploads_today
 from app.schemas.file_schema import FileUploadResponse, FileInfoResponse
 from fastapi.responses import Response
 import uuid
@@ -13,17 +15,25 @@ router = APIRouter()
 
 
 @router.post("/upload", response_model=FileUploadResponse)
-async def upload(file: UploadFile = File(...)):
-    """Sube un archivo, lo guarda en Supabase y registra metadata en PostgreSQL."""
+@limiter.limit("10/minute")
+async def upload(request: Request, file: UploadFile = File(...)):
+    """Sube un archivo. Requiere autenticación. Límite: 3 archivos por día."""
 
-    # Leer bytes del archivo
+    user = get_current_user(request)
+    user_id = user.id
+
+    uploads_today = get_user_uploads_today(user_id)
+    if uploads_today >= 3:
+        raise HTTPException(
+            status_code=429,
+            detail="Límite diario alcanzado. Máximo 3 archivos por día."
+        )
+
     file_bytes = await file.read()
 
     # Validar archivo
     validate_file(file, file_bytes)
 
-    # Generar token y path único
-    token = generate_token()
     filename = f"{uuid.uuid4()}_{file.filename}"
     expires_at = datetime.utcnow() + timedelta(hours=settings.expiration_hours)
 
@@ -36,7 +46,8 @@ async def upload(file: UploadFile = File(...)):
         mime_type=file.content_type,
         size_bytes=len(file_bytes),
         storage_path=storage_path,
-        expires_at=expires_at
+        expires_at=expires_at,
+        user_id=user_id
     )
 
     return FileUploadResponse(
@@ -49,10 +60,10 @@ async def upload(file: UploadFile = File(...)):
 
 
 @router.get("/file/{token}", response_model=FileInfoResponse)
-def file_info(token: str):
+@limiter.limit("20/minute")
+def file_info(request: Request, token: str):
     """Retorna información de un archivo por su token."""
     record = get_file_by_token(token)
-
     if not record:
         raise HTTPException(status_code=404, detail="Archivo no encontrado o expirado")
 
@@ -68,10 +79,10 @@ def file_info(token: str):
 
 
 @router.get("/download/{token}")
-def download(token: str):
+@limiter.limit("10/minute")
+def download(request: Request, token: str):
     """Descarga un archivo por su token."""
     record = get_file_by_token(token)
-
     if not record:
         raise HTTPException(status_code=404, detail="Archivo no encontrado o expirado")
 
@@ -91,7 +102,8 @@ def download(token: str):
 
 
 @router.delete("/file/{token}")
-def delete(token: str):
+@limiter.limit("10/minute")
+def delete(request: Request, token: str):
     """Elimina un archivo por su token."""
     record = get_file_by_token(token)
 

@@ -9,3 +9,4 @@ apscheduler
 pytest
 httpx
 pydantic-settings
+slowapi

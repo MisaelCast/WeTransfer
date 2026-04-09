@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
 from uuid import UUID
+from typing import Optional
+
 
 
 class FileUploadResponse(BaseModel):
