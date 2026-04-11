@@ -28,9 +28,15 @@ async def upload(request: Request, file: UploadFile = File(...)):
             detail="Límite diario alcanzado. Máximo 3 archivos por día."
         )
 
-    file_bytes = await file.read()
+    # Validar tamaño antes de leer todo el archivo
+    max_bytes = settings.max_file_size_mb * 1024 * 1024
+    file_bytes = await file.read(max_bytes + 1)
+    if len(file_bytes) > max_bytes:
+        raise HTTPException(
+            status_code=400,
+            detail=f"El archivo excede el tamaño máximo de {settings.max_file_size_mb}MB"
+        )
 
-    # Validar archivo
     validate_file(file, file_bytes)
 
     filename = f"{uuid.uuid4()}_{file.filename}"
