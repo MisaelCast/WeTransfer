@@ -1,2 +1,2 @@
 [phases.setup]
-nixPkgs = ["libmagic"]
+aptPkgs = ["libmagic-dev", "libmagic1"]
