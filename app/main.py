@@ -6,6 +6,8 @@ from slowapi.errors import RateLimitExceeded
 from app.utils.limiter import limiter
 from app.api.routes.file_routes import router
 from app.services.expiration_service import start_scheduler
+from app.config import settings
+
 
 app = FastAPI(
     title="WeTransfer Clon",
@@ -27,3 +29,10 @@ def startup_event():
 @app.get("/")
 def root():
     return FileResponse("app/static/index.html")
+
+@app.get("/config")
+def get_config():
+    return {
+        "supabase_url": settings.supabase_url,
+        "supabase_key": settings.supabase_key
+    }

@@ -4,7 +4,6 @@ from app.config import settings
 from app.utils.validators import validate_file
 from app.utils.limiter import limiter
 from app.utils.auth import get_current_user
-from app.services.token_service import generate_token
 from app.services.storage_service import upload_file, delete_file, get_file
 from app.db.queries import insert_file, get_file_by_token, delete_file_by_id, get_user_uploads_today
 from app.schemas.file_schema import FileUploadResponse, FileInfoResponse

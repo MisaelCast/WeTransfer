@@ -266,15 +266,22 @@
     </div>
 
     <script>
-      const SUPABASE_URL = "https://oehxcqntlcanswjhujzw.supabase.co";
-      const SUPABASE_KEY =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9laHhjcW50bGNhbnN3amh1anp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MjE0NzYsImV4cCI6MjA5MDQ5NzQ3Nn0.lJ2Xw1ecadI45hAR7AYCwesHnJBZVdnulhXhvnssUm8";
-
-      const { createClient } = supabase;
-      const client = createClient(SUPABASE_URL, SUPABASE_KEY);
-
+      // Variables globales
+      let SUPABASE_URL, SUPABASE_KEY, client;
       let currentSession = null;
       let selectedFile = null;
+
+      async function loadConfig() {
+        const res = await fetch("/config");
+        const config = await res.json();
+        SUPABASE_URL = config.supabase_url;
+        SUPABASE_KEY = config.supabase_key;
+        const { createClient } = supabase;
+        client = createClient(SUPABASE_URL, SUPABASE_KEY);
+        await init();
+      }
+
+      loadConfig();
 
       // Verificar sesión al cargar
       async function init() {
@@ -381,8 +388,6 @@
           alert("Enlace copiado");
         });
       }
-
-      init();
     </script>
   </body>
 </html>

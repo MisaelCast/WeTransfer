@@ -1,7 +1,5 @@
--- Extensión para generar UUIDs
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Tabla principal de archivos
 CREATE TABLE IF NOT EXISTS files (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     original_name   TEXT NOT NULL,
@@ -11,10 +9,11 @@ CREATE TABLE IF NOT EXISTS files (
     download_token  UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
     expires_at      TIMESTAMP NOT NULL,
     status          TEXT NOT NULL DEFAULT 'active',
+    user_id         TEXT,
     created_at      TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- Índices para búsquedas frecuentes
 CREATE INDEX IF NOT EXISTS idx_files_download_token ON files(download_token);
 CREATE INDEX IF NOT EXISTS idx_files_status ON files(status);
 CREATE INDEX IF NOT EXISTS idx_files_expires_at ON files(expires_at);
+CREATE INDEX IF NOT EXISTS idx_files_user_id ON files(user_id);
