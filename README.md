@@ -93,3 +93,16 @@ CREATE TABLE files (
 | GET    | `/docs`             | Documentación Swagger         |
 
 ---
+
+
+## Flujo del sistema
+
+1. El usuario sube un archivo mediante `/upload`
+2. El backend valida el archivo (tipo, tamaño, seguridad)
+3. El archivo se almacena en Supabase Storage
+4. La metadata se guarda en PostgreSQL
+5. Se genera un token único de descarga
+6. El usuario descarga el archivo mediante `/download/{token}`
+7. Un job automático elimina archivos expirados
+
+---
