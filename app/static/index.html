@@ -338,9 +338,24 @@
         }
       }
 
+      // Función para subir el archivo al servidor
       async function uploadFile() {
         if (!selectedFile || !currentSession) return;
 
+        // --- NUEVA VALIDACIÓN DE TAMAÑO ---
+        // 50 MB expresados en bytes (1 MB = 1024 * 1024 bytes)
+        const MAX_SIZE_BYTES = 50 * 1024 * 1024;
+
+        if (selectedFile.size > MAX_SIZE_BYTES) {
+          document.getElementById("error-msg").textContent =
+            "El archivo excede el tamaño máximo permitido de 50MB.";
+          document.getElementById("error-msg").style.display = "block";
+          document.getElementById("result").style.display = "none";
+          return; // Detiene la ejecución aquí, no hace la petición al servidor
+        }
+        // ----------------------------------
+
+        // Deshabilitar botón y mostrar estado de subida
         const btn = document.getElementById("upload-btn");
         btn.disabled = true;
         btn.textContent = "Subiendo...";
@@ -382,6 +397,7 @@
         }
       }
 
+      // Función para copiar el enlace al portapapeles
       function copyLink() {
         const link = document.getElementById("download-link").textContent;
         navigator.clipboard.writeText(link).then(() => {
