@@ -4,21 +4,54 @@ from fastapi import HTTPException, UploadFile
 from app.config import settings
 
 ALLOWED_MIME_TYPES = [
+    # Imágenes
     "image/jpeg",
     "image/png",
     "image/gif",
     "image/webp",
+    "image/svg+xml", 
+    
+    # Documentos de Office y PDF
     "application/pdf",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", # Excel (.xlsx)
+    "application/vnd.ms-excel", # Excel antiguo (.xls)
+    "application/msword", # Word antiguo (.doc)
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", # Word (.docx)
+    "application/vnd.ms-powerpoint", # PowerPoint (.ppt)
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation", # PowerPoint (.pptx)
+    
+    # Archivos comprimidos
     "application/zip",
     "application/x-zip-compressed",
+    "application/vnd.rar", # .rar
+    "application/x-7z-compressed", # .7z
+    
+    # Texto y Datos
     "text/plain",
+    "text/csv", # .csv
+    "application/json", # .json
+    "text/markdown", # .md
+    
+    # Multimedia
     "video/mp4",
+    "video/quicktime", # .mov
+    "video/webm", # .webm
     "audio/mpeg",
+    "audio/wav", # .wav
 ]
 
 BLOCKED_EXTENSIONS = [
-    ".exe", ".sh", ".bat", ".cmd", ".py",
-    ".js", ".php", ".rb", ".pl", ".ps1"
+    # Ejecutables y scripts de Windows (Protección de usuarios)
+    ".exe", ".bat", ".cmd", ".ps1", ".vbs", ".msi", ".wsf", ".hta",
+    
+    # Ejecutables y scripts de Linux/Unix 
+    ".sh", ".bin", ".elf", ".run",
+    
+    # Lenguajes de programación y scripts web (Prevención de ejecución remota)
+    ".py", ".js", ".php", ".rb", ".pl", ".cgi", ".jsp", ".asp", ".aspx",
+    
+    # Otros binarios y paquetes ejecutables
+    ".jar", ".apk", ".appimage"
 ]
 
 
