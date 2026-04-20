@@ -1,275 +1,292 @@
 <!doctype html>
-<html lang="es">
+<html class="light" lang="es">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WeTransfer Clon</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              background: "#fdfdfd",
+              surface: "#fdfdfd",
+              "on-surface": "#0a0c0c",
+              "on-surface-variant": "#444b4d",
+              primary: "#004e5d",
+              "primary-container": "#005a6b",
+              "on-primary": "#ffffff",
+              "surface-container-low": "#f8f9fa",
+              "surface-container-highest": "#e8eaeb",
+              outline: "#7b8487",
+              "outline-variant": "#d1d9dd",
+            },
+            fontFamily: {
+              headline: ["Space Grotesk"],
+              body: ["Manrope"],
+              label: ["Manrope"],
+            },
+          },
+        },
+      };
+    </script>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
       }
-
-      body {
-        font-family: "Segoe UI", sans-serif;
-        background: #1a1a2e;
-        color: #eee;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+      .cinematic-shadow {
+        box-shadow:
+          0 40px 80px -20px rgba(0, 78, 93, 0.15),
+          0 20px 40px -20px rgba(0, 0, 0, 0.1);
       }
-
-      .container {
-        background: #16213e;
-        border-radius: 16px;
-        padding: 40px;
-        width: 100%;
-        max-width: 500px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      .circular-focus {
+        background: radial-gradient(
+          circle at 30% 30%,
+          #007c92 0%,
+          #004e5d 100%
+        );
+        box-shadow:
+          inset 0 0 30px rgba(255, 255, 255, 0.1),
+          0 20px 60px rgba(0, 78, 93, 0.2);
       }
-
-      h1 {
-        font-size: 1.8rem;
-        margin-bottom: 8px;
-        color: #e94560;
+      /* Ocultamos la barra de scroll para un look más limpio */
+      ::-webkit-scrollbar {
+        width: 8px;
       }
-
-      p.subtitle {
-        color: #aaa;
-        margin-bottom: 32px;
-        font-size: 0.95rem;
-      }
-
-      .google-btn {
-        width: 100%;
-        padding: 14px;
-        background: white;
-        color: #333;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        font-weight: 500;
-        transition: background 0.2s;
-      }
-
-      .google-btn:hover {
-        background: #f0f0f0;
-      }
-
-      .google-btn img {
-        width: 20px;
-      }
-
-      .user-info {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 24px;
-        padding: 12px;
-        background: #0f3460;
-        border-radius: 8px;
-      }
-
-      .user-info span {
-        font-size: 0.85rem;
-        color: #aaa;
-      }
-
-      .logout-btn {
-        padding: 6px 12px;
+      ::-webkit-scrollbar-track {
         background: transparent;
-        color: #e94560;
-        border: 1px solid #e94560;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        cursor: pointer;
-        width: auto;
       }
-
-      .drop-zone {
-        border: 2px dashed #e94560;
-        border-radius: 12px;
-        padding: 40px;
-        text-align: center;
-        cursor: pointer;
-        transition: background 0.2s;
-        margin-bottom: 20px;
-      }
-
-      .drop-zone:hover {
-        background: rgba(233, 69, 96, 0.05);
-      }
-      .drop-zone input {
-        display: none;
-      }
-      .drop-zone p {
-        color: #aaa;
-        font-size: 0.9rem;
-        margin-top: 8px;
-      }
-      .drop-zone .icon {
-        font-size: 2.5rem;
-      }
-
-      #file-name {
-        color: #e94560;
-        font-size: 0.9rem;
-        margin-bottom: 16px;
-        min-height: 20px;
-      }
-
-      .upload-btn {
-        width: 100%;
-        padding: 14px;
-        background: #e94560;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-
-      .upload-btn:hover {
-        background: #c73652;
-      }
-      .upload-btn:disabled {
-        background: #555;
-        cursor: not-allowed;
-      }
-
-      .result {
-        margin-top: 24px;
-        background: #0f3460;
-        border-radius: 8px;
-        padding: 20px;
-        display: none;
-      }
-
-      .result p {
-        font-size: 0.85rem;
-        color: #aaa;
-        margin-bottom: 8px;
-      }
-      .result a {
-        color: #e94560;
-        word-break: break-all;
-        font-size: 0.9rem;
-      }
-      .result .info {
-        margin-top: 12px;
-        font-size: 0.8rem;
-        color: #888;
-      }
-
-      .copy-btn {
-        margin-top: 12px;
-        padding: 8px;
-        font-size: 0.85rem;
-        background: #0f3460;
-        border: 1px solid #e94560;
-        color: white;
-        width: 100%;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-
-      .copy-btn:hover {
-        background: #1a4a7a;
-      }
-
-      .error {
-        margin-top: 16px;
-        color: #e94560;
-        font-size: 0.9rem;
-        display: none;
-      }
-
-      .login-section {
-        text-align: center;
-      }
-      .login-section p {
-        color: #aaa;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-      }
-
-      #upload-section {
-        display: none;
+      ::-webkit-scrollbar-thumb {
+        background: #d1d9dd;
+        border-radius: 4px;
       }
     </style>
   </head>
-  <body>
-    <div class="container">
-      <h1>WeTransfer Clon</h1>
-      <p class="subtitle">
-        Sube archivos y comparte enlaces. Expiran en 12 horas.
-      </p>
-
-      <!-- Login -->
-      <div class="login-section" id="login-section">
-        <p>Inicia sesión para subir archivos</p>
-        <button class="google-btn" onclick="loginWithGoogle()">
-          <img src="https://www.google.com/favicon.ico" alt="Google" />
-          Continuar con Google
-        </button>
-      </div>
-
-      <!-- Upload -->
-      <div id="upload-section">
-        <div class="user-info">
-          <span id="user-email"></span>
-          <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
-        </div>
-
+  <body
+    class="bg-background text-on-surface font-body min-h-screen flex flex-col overflow-hidden"
+  >
+    <nav
+      class="w-full top-0 sticky z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant/30 shrink-0"
+    >
+      <div
+        class="flex justify-between items-center px-8 py-4 max-w-[1440px] mx-auto"
+      >
         <div
-          class="drop-zone"
-          onclick="document.getElementById('file-input').click()"
+          class="text-base font-bold tracking-[0.1em] text-on-surface uppercase"
         >
-          <div class="icon">📁</div>
-          <p>Haz clic para seleccionar un archivo</p>
-          <input
-            type="file"
-            id="file-input"
-            onchange="handleFileSelect(this)"
-          />
+          WeTransfer Clon
         </div>
-
-        <div id="file-name"></div>
-
-        <button
-          class="upload-btn"
-          id="upload-btn"
-          onclick="uploadFile()"
-          disabled
+        <div
+          id="user-controls"
+          class="hidden items-center space-x-4 text-xs font-medium"
         >
-          Subir archivo
-        </button>
-
-        <div class="result" id="result">
-          <p>Enlace de descarga:</p>
-          <a id="download-link" href="#" target="_blank"></a>
-          <button class="copy-btn" onclick="copyLink()">Copiar enlace</button>
-          <div class="info" id="expiry-info"></div>
+          <span
+            id="user-email"
+            class="text-on-surface-variant hidden md:inline"
+          ></span>
+          <button
+            onclick="logout()"
+            class="text-primary hover:text-primary-container transition-colors tracking-[0.05em] uppercase font-bold"
+          >
+            Cerrar Sesión
+          </button>
         </div>
-
-        <div class="error" id="error-msg"></div>
       </div>
-    </div>
+    </nav>
+
+    <main
+      class="flex-grow flex flex-col items-center justify-center px-6 relative z-10 w-full h-full"
+    >
+      <div
+        class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center"
+      >
+        <div
+          class="lg:col-span-5 space-y-6 order-2 lg:order-1 flex flex-col justify-center"
+        >
+          <div class="space-y-3">
+            <span
+              class="font-label text-[10px] tracking-[0.3em] uppercase text-primary font-extrabold flex items-center gap-2"
+            >
+              <span
+                class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"
+              ></span>
+              Sistema Activo
+            </span>
+            <h1
+              class="font-headline text-5xl lg:text-6xl font-bold tracking-tight text-on-surface leading-[0.95]"
+            >
+              Sube <br />
+              <span class="text-primary-container">Comparte.</span>
+            </h1>
+          </div>
+          <p
+            class="text-on-surface-variant text-sm md:text-base max-w-sm leading-relaxed font-medium"
+          >
+            Sube tus archivos de hasta 50MB de forma segura. Los enlaces expiran
+            automáticamente en 12 horas.
+          </p>
+
+          <div id="login-section" class="pt-2 space-y-3">
+            <p
+              class="font-label text-[10px] tracking-[0.2em] uppercase text-outline font-bold"
+            >
+              Paso 1: Identifícate para subir archivos
+            </p>
+            <button
+              onclick="loginWithGoogle()"
+              class="w-full md:w-auto inline-flex items-center justify-center px-6 py-3 bg-white border border-outline-variant rounded-xl text-on-surface font-bold text-xs tracking-[0.1em] uppercase hover:bg-surface-container-low transition-colors shadow-sm"
+            >
+              <img
+                src="https://www.google.com/favicon.ico"
+                alt="Google"
+                class="w-4 h-4 mr-3"
+              />
+              Continuar con Google
+            </button>
+          </div>
+
+          <div id="upload-section" class="hidden space-y-4 pt-2">
+            <div id="action-container" class="space-y-4">
+              <div id="file-info-container" class="hidden">
+                <label
+                  class="block font-label text-[9px] tracking-[0.15em] uppercase text-outline font-bold mb-1.5 ml-1"
+                  >Archivo Seleccionado</label
+                >
+                <div
+                  id="file-name"
+                  class="px-4 py-3 bg-surface-container-low border border-primary/30 rounded-xl text-sm font-medium text-primary truncate"
+                ></div>
+              </div>
+
+              <div
+                id="error-msg"
+                class="hidden text-red-600 text-xs font-bold bg-red-50 p-3 rounded-lg border border-red-200"
+              ></div>
+
+              <button
+                id="upload-btn"
+                onclick="uploadFile()"
+                disabled
+                class="group relative w-full md:w-auto inline-flex items-center justify-center px-8 py-4 font-headline font-bold text-white transition-all duration-300 rounded-xl overflow-hidden cinematic-shadow hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                <div
+                  class="absolute inset-0 bg-gradient-to-br from-primary via-primary-container to-primary transition-transform duration-500 group-hover:scale-110"
+                ></div>
+                <span
+                  class="relative flex items-center space-x-2 tracking-[0.2em] uppercase text-xs"
+                >
+                  <span id="upload-btn-text">Iniciar Transferencia</span>
+                  <span class="material-symbols-outlined text-sm font-bold"
+                    >bolt</span
+                  >
+                </span>
+              </button>
+            </div>
+
+            <div
+              id="result-section"
+              class="hidden p-5 bg-surface-container-low border border-outline-variant/50 rounded-xl space-y-3"
+            >
+              <label
+                class="block font-label text-[9px] tracking-[0.15em] uppercase text-primary font-bold"
+                >¡Transferencia Completada!</label
+              >
+              <a
+                id="download-link"
+                href="#"
+                target="_blank"
+                class="block text-primary font-medium text-sm break-all hover:underline"
+              ></a>
+              <div
+                class="flex items-center justify-between mt-2 pt-3 border-t border-outline-variant/30"
+              >
+                <span
+                  id="expiry-info"
+                  class="text-[10px] text-outline font-medium"
+                ></span>
+                <div class="flex space-x-2">
+                  <button
+                    onclick="resetUpload()"
+                    class="px-3 py-1.5 text-primary text-[10px] font-bold uppercase tracking-wider hover:bg-surface-container-highest rounded-lg transition-colors"
+                  >
+                    Nuevo
+                  </button>
+                  <button
+                    onclick="copyLink()"
+                    class="px-3 py-1.5 bg-primary text-white rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-primary-container transition-colors shadow-sm"
+                  >
+                    Copiar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 flex justify-center order-1 lg:order-2">
+          <div
+            class="relative w-72 h-72 lg:w-[400px] lg:h-[400px] flex items-center justify-center"
+          >
+            <div
+              onclick="document.getElementById('file-input').click()"
+              class="circular-focus w-full h-full rounded-full cinematic-shadow relative flex flex-col items-center justify-center text-white p-8 text-center group cursor-pointer border-[1px] border-white/30 overflow-hidden hover:brightness-110 transition-all"
+            >
+              <div class="relative z-10 space-y-4 pointer-events-none">
+                <div
+                  class="w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-white/10 flex items-center justify-center mx-auto transition-transform duration-700 group-hover:scale-110 border border-white/30 backdrop-blur-md"
+                >
+                  <span
+                    class="material-symbols-outlined text-3xl lg:text-5xl text-white"
+                    >upload_file</span
+                  >
+                </div>
+                <div class="space-y-1">
+                  <h2
+                    class="font-headline text-xl lg:text-3xl font-bold tracking-tight"
+                  >
+                    Drop File
+                  </h2>
+                  <p
+                    class="font-label text-[9px] lg:text-[10px] tracking-[0.2em] uppercase font-medium text-white/70"
+                  >
+                    Click para seleccionar (Max 50MB)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <input
+              type="file"
+              id="file-input"
+              class="hidden"
+              onchange="handleFileSelect(this)"
+            />
+          </div>
+        </div>
+      </div>
+    </main>
 
     <script>
-      // Variables globales
       let SUPABASE_URL, SUPABASE_KEY, client;
       let currentSession = null;
       let selectedFile = null;
+      const MAX_FILE_SIZE_MB = 50;
 
       async function loadConfig() {
         const res = await fetch("/config");
@@ -283,7 +300,6 @@
 
       loadConfig();
 
-      // Verificar sesión al cargar
       async function init() {
         const {
           data: { session },
@@ -293,7 +309,6 @@
           showUploadSection(session.user.email);
         }
 
-        // Manejar callback de OAuth
         client.auth.onAuthStateChange((event, session) => {
           if (event === "SIGNED_IN" && session) {
             currentSession = session;
@@ -305,12 +320,25 @@
         });
       }
 
+      function showUploadSection(email) {
+        document.getElementById("login-section").classList.add("hidden");
+        document.getElementById("upload-section").classList.remove("hidden");
+        document.getElementById("user-controls").classList.remove("hidden");
+        document.getElementById("user-controls").classList.add("flex");
+        document.getElementById("user-email").textContent = email;
+      }
+
+      function showLoginSection() {
+        document.getElementById("login-section").classList.remove("hidden");
+        document.getElementById("upload-section").classList.add("hidden");
+        document.getElementById("user-controls").classList.add("hidden");
+        document.getElementById("user-controls").classList.remove("flex");
+      }
+
       async function loginWithGoogle() {
         await client.auth.signInWithOAuth({
           provider: "google",
-          options: {
-            redirectTo: window.location.origin,
-          },
+          options: { redirectTo: window.location.origin },
         });
       }
 
@@ -318,50 +346,45 @@
         await client.auth.signOut();
       }
 
-      function showUploadSection(email) {
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("upload-section").style.display = "block";
-        document.getElementById("user-email").textContent = email;
-      }
-
-      function showLoginSection() {
-        document.getElementById("login-section").style.display = "block";
-        document.getElementById("upload-section").style.display = "none";
-      }
-
       function handleFileSelect(input) {
         selectedFile = input.files[0];
+        const errorMsg = document.getElementById("error-msg");
+        const btn = document.getElementById("upload-btn");
+        const fileContainer = document.getElementById("file-info-container");
+
+        errorMsg.classList.add("hidden");
+
+        // Si el usuario selecciona un archivo nuevo, ocultamos el resultado y mostramos los controles
+        document.getElementById("result-section").classList.add("hidden");
+        document.getElementById("action-container").classList.remove("hidden");
+
         if (selectedFile) {
-          document.getElementById("file-name").textContent =
-            `Archivo: ${selectedFile.name}`;
-          document.getElementById("upload-btn").disabled = false;
+          // Validación frontend del peso del archivo
+          if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+            errorMsg.textContent = `El archivo excede el límite de ${MAX_FILE_SIZE_MB}MB.`;
+            errorMsg.classList.remove("hidden");
+            fileContainer.classList.add("hidden");
+            btn.disabled = true;
+            selectedFile = null;
+            return;
+          }
+
+          document.getElementById("file-name").textContent = selectedFile.name;
+          fileContainer.classList.remove("hidden");
+          btn.disabled = false;
         }
       }
 
-      // Función para subir el archivo al servidor
       async function uploadFile() {
         if (!selectedFile || !currentSession) return;
 
-        // --- NUEVA VALIDACIÓN DE TAMAÑO ---
-        // 50 MB expresados en bytes (1 MB = 1024 * 1024 bytes)
-        const MAX_SIZE_BYTES = 50 * 1024 * 1024;
-
-        if (selectedFile.size > MAX_SIZE_BYTES) {
-          document.getElementById("error-msg").textContent =
-            "El archivo excede el tamaño máximo permitido de 50MB.";
-          document.getElementById("error-msg").style.display = "block";
-          document.getElementById("result").style.display = "none";
-          return; // Detiene la ejecución aquí, no hace la petición al servidor
-        }
-        // ----------------------------------
-
-        // Deshabilitar botón y mostrar estado de subida
         const btn = document.getElementById("upload-btn");
-        btn.disabled = true;
-        btn.textContent = "Subiendo...";
+        const btnText = document.getElementById("upload-btn-text");
+        const errorMsg = document.getElementById("error-msg");
 
-        document.getElementById("error-msg").style.display = "none";
-        document.getElementById("result").style.display = "none";
+        btn.disabled = true;
+        btnText.textContent = "Procesando...";
+        errorMsg.classList.add("hidden");
 
         const formData = new FormData();
         formData.append("file", selectedFile);
@@ -369,9 +392,7 @@
         try {
           const response = await fetch("/upload", {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${currentSession.access_token}`,
-            },
+            headers: { Authorization: `Bearer ${currentSession.access_token}` },
             body: formData,
           });
 
@@ -383,26 +404,38 @@
           const data = await response.json();
           const downloadUrl = `${window.location.origin}/download/${data.download_token}`;
 
+          // Preparamos los datos del enlace
           document.getElementById("download-link").href = downloadUrl;
           document.getElementById("download-link").textContent = downloadUrl;
           document.getElementById("expiry-info").textContent =
             `Expira: ${new Date(data.expires_at).toLocaleString()}`;
-          document.getElementById("result").style.display = "block";
+
+          // EL TRUCO ESTÁ AQUÍ: Ocultamos los botones de subida y mostramos la tarjeta de resultado
+          document.getElementById("action-container").classList.add("hidden");
+          document.getElementById("result-section").classList.remove("hidden");
         } catch (err) {
-          document.getElementById("error-msg").textContent = err.message;
-          document.getElementById("error-msg").style.display = "block";
+          errorMsg.textContent = err.message;
+          errorMsg.classList.remove("hidden");
         } finally {
-          btn.disabled = false;
-          btn.textContent = "Subir archivo";
+          btnText.textContent = "Iniciar Transferencia";
         }
       }
 
-      // Función para copiar el enlace al portapapeles
       function copyLink() {
         const link = document.getElementById("download-link").textContent;
-        navigator.clipboard.writeText(link).then(() => {
-          alert("Enlace copiado");
-        });
+        navigator.clipboard
+          .writeText(link)
+          .then(() => alert("¡Enlace copiado al portapapeles!"));
+      }
+
+      // Nueva función para reiniciar la vista y subir otro archivo
+      function resetUpload() {
+        selectedFile = null;
+        document.getElementById("file-input").value = ""; // Limpiar input
+        document.getElementById("result-section").classList.add("hidden");
+        document.getElementById("action-container").classList.remove("hidden");
+        document.getElementById("file-info-container").classList.add("hidden");
+        document.getElementById("upload-btn").disabled = true;
       }
     </script>
   </body>
