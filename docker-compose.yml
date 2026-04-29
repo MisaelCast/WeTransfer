@@ -1,0 +1,31 @@
+services:
+  web:
+    build: .
+    ports:
+      - "80:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+# Database service
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: wetransfer
+      POSTGRES_USER: wetransfer_user
+      POSTGRES_PASSWORD: password123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wetransfer_user -d wetransfer"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
